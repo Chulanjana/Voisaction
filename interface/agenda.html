@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voisaction</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" herf=".\stylesheet.css"> -->
+
+    <style>
+        body {
+            background-color: #fae9e6;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+        /* .record{
+            margin-top: 50px;
+            color: #000000;
+            background-color: #ff8c7c;
+            font-weight: bold;
+        } */
+        .header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-section {
+            background-color: #FBE5E2;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .form-section h5 {
+            color: #333;
+            font-weight: bold;
+        }
+        .form-section input,
+        .form-section .form-control {
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .table-section {
+            background-color: #FBE5E2;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .table-section table {
+            width: 100%;
+            background-color: #fff;
+        }
+        .table thead th {
+            background-color: #FBE5E2;
+            color: #333;
+            font-weight: bold;
+            border-top: none;
+        }
+        .table tbody tr {
+            background-color: #fff;
+        }
+        .btn-add {
+            background-color: #FF6B6B;
+            color: #fff;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .btn-edit,
+        .btn-delete {
+            background-color: transparent;
+            border: none;
+            color: #FF6B6B;
+            cursor: pointer;
+        }
+        .btn-delete {
+            margin-left: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Voisaction</div>
+        
+        <form id="agendaForm">
+            <div class="form-row">
+                <div class="col-md-3 mb-3">
+                    <label>Date</label>
+                    <input type="date" class="form-control" id="agendaDate">
+                </div>
+                <div class="col-md-9 mb-3">
+                    <label>Event Name</label>
+                    <input type="text" class="form-control" placeholder="Event Name">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Number of Participants</label>
+                    <input type="number" class="form-control" placeholder="Number of Participants">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h5>Agenda Points</h5>
+                <div class="form-row">
+                    <div class="col-md-6 mb-3">
+                        <input type="text" class="form-control" id="agendaPoint" placeholder="Agenda point">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="text" class="form-control" id="responsiblePerson" placeholder="Responsible person">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col mb-3">
+                        <textarea class="form-control" id="description" placeholder="Description"></textarea>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-add" id="addButton">+</button>
+            </div>
+        </form>
+
+        <div class="table-section">
+            <table class="table table-borderless">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Agenda point</th>
+                        <th>Responsible person</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="agendaTableBody">
+                    <!-- Agenda points will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <button type="button" class="record btn btn-danger">Record</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- <script src="interface\interface.js"></script> -->
+    <script>
+        let agendaCount = 0;
+        let editIndex = null;
+    
+        function addOrUpdateAgendaPoint() {
+            const agendaPoint = document.getElementById('agendaPoint').value.trim();
+            const responsiblePerson = document.getElementById('responsiblePerson').value.trim();
+            const description = document.getElementById('description').value.trim();
+    
+            // Validation
+            if (!agendaPoint || !responsiblePerson || !description) {
+                alert("Please fill out all fields.");
+                return;
+            }
+            if (description.length <= agendaPoint.length) {
+                alert("Description must exceed the number of characters in Agenda Point.");
+                return;
+            }
+    
+            if (editIndex === null) {
+                // Add a new agenda point
+                agendaCount++;
+                const tableBody = document.getElementById('agendaTableBody');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${agendaCount}</td>
+                    <td>${agendaPoint}</td>
+                    <td>${responsiblePerson}</td>
+                    <td>${description}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editAgendaPoint(this)">✏️</button>
+                        <button class="btn-delete" onclick="deleteRow(this)">🗑️</button>
+                    </td>
+                `;
+                tableBody.appendChild(newRow);
+            } else {
+                // Update existing agenda point
+                const row = document.getElementById('agendaTableBody').children[editIndex];
+                row.cells[1].innerText = agendaPoint;
+                row.cells[2].innerText = responsiblePerson;
+                row.cells[3].innerText = description;
+    
+                // Reset the edit mode
+                editIndex = null;
+                document.getElementById('addButton').innerText = '+';
+            }
+    
+            // Clear input fields
+            document.getElementById('agendaPoint').value = '';
+            document.getElementById('responsiblePerson').value = '';
+            document.getElementById('description').value = '';
+        }
+    
+        function editAgendaPoint(button) {
+            const row = button.parentNode.parentNode;
+            editIndex = Array.from(row.parentNode.children).indexOf(row);
+    
+            // Load the selected row data into the form fields
+            document.getElementById('agendaPoint').value = row.cells[1].innerText;
+            document.getElementById('responsiblePerson').value = row.cells[2].innerText;
+            document.getElementById('description').value = row.cells[3].innerText;
+    
+            // Change the add button to an update button
+            document.getElementById('addButton').innerText = 'Update';
+        }
+    
+        function deleteRow(button) {
+            const row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+    
+        function recordData() {
+            const date = document.getElementById('agendaDate').value;
+            const eventName = document.querySelector('input[placeholder="Event Name"]').value.trim();
+            const numberOfParticipants = document.querySelector('input[placeholder="Number of Participants"]').value.trim();
+            const agendaPoints = [];
+    
+            // Validation
+            const agendaTable = document.querySelectorAll("#agendaTableBody tr");
+            if (agendaTable.length === 0) {
+                alert("The action point table cannot be empty.");
+                return;
+            }
+            if (!date) {
+                alert("Please select an agenda date.");
+                return;
+            }
+            if (!eventName) {
+                alert("Please enter the event name.");
+                return;
+            }
+            if (!numberOfParticipants || parseInt(numberOfParticipants) <= 2) {
+                alert("The number of participants must be more than 2.");
+                return;
+            }
+    
+            // Collect agenda points from the table
+            agendaTable.forEach(row => {
+                const agendaPoint = {
+                    point: row.cells[1].innerText,
+                    responsiblePerson: row.cells[2].innerText,
+                    description: row.cells[3].innerText
+                };
+                agendaPoints.push(agendaPoint);
+            });
+    
+            // Create data object to send
+            const data = {
+                date: date,
+                eventName: eventName,
+                numberOfParticipants: numberOfParticipants,
+                agendaPoints: agendaPoints
+            };
+    
+            // Send data to the backend
+            fetch('http://localhost:5000/record', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(responseData => {
+                console.log("Data recorded successfully:", responseData);
+                alert("Data recorded successfully!");
+            })
+            .catch(error => {
+                console.error("Error recording data:", error);
+                alert("Error recording data.");
+            });
+        }
+    
+        document.getElementById("addButton").addEventListener("click", addOrUpdateAgendaPoint);
+        document.querySelector(".record").addEventListener("click", recordData);
+    
+    </script>
+    
+</body>
+</html>

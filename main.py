@@ -2,8 +2,10 @@ import os
 import re
 import datetime
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS  
 import pyodbc
+from transcrib import *
+from audioProcessing import *
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -125,6 +127,99 @@ def upload_audio():
     save_path = os.path.join("uploads", generate_filename())
     audio.save(save_path)
     return 'Audio uploaded successfully!', 200
+
+
+
+# Specify the folder path you want to read
+folder_path = "D:\\AIDS\\2nd year my\\my projects\\voisaction\\Voisaction\\uploads"
+
+# Check if the folder exists
+if os.path.exists(folder_path):
+    files = os.listdir(folder_path)
+else:
+    print("The specified folder does not exist.")
+
+
+bucket_name = "voice-text_bucket"  
+
+
+
+script=[]
+
+for l in files:
+    conversation=[]
+
+    filename_with_ext = os.path.basename(l)
+    filename = os.path.splitext(filename_with_ext)[0]
+    destination_blob_name = f"Meeting Recordings/{filename}"
+    source_file_path = l
+
+    gcs_uri = upload_to_gcs(bucket_name, source_file_path, destination_blob_name)
+
+    transcript, speaker_segments = speech_to_text(gcs_uri,number_of_participants)
+
+    dialogues = combine_speaker_dialogues(speaker_segments)
+
+    speaker_clips_count = {}
+    speaker_tag_lable={}
+    for dialogue in dialogues:
+        print(dialogue['speaker_tag'],dialogue['start_time'],dialogue['end_time'])
+        speaker_tag = dialogue['speaker_tag']  # Current speaker
+        start_time = dialogue['start_time']
+        end_time = dialogue['end_time']
+
+        # Print dialogue
+        print(f"Speaker {speaker_tag} said: \"{dialogue['text']}\" from {start_time}s to {end_time}s")
+
+        conversation.append([speaker_tag, dialogue['text']])
+        
+        extracted_files = extract_five_second_clips(l,
+            start_time_ms=start_time,
+            end_time_ms=end_time,
+            speaker_tag=speaker_tag,
+            speaker_clips_count=speaker_clips_count
+        )            
+        if extracted_files!=[]:
+            print(extracted_files)
+            predicted_speaker,confidence = predict_speaker(extracted_files)
+            print(f"Predicted speaker: {predicted_speaker}")
+            print(f"Confidence: {confidence:.2f}")
+            if predicted_speaker != None:
+                if speaker_tag not in speaker_tag_lable:
+                    speaker_tag_lable[speaker_tag] = predicted_speaker
+
+    for row in conversation:
+        key = (row[0]) 
+        if key in speaker_tag_lable:
+            row[0] = speaker_tag_lable[key]  
+
+
+    script=script+conversation
+
+
+
+print(script)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
