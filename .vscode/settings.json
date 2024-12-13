@@ -1,0 +1,65 @@
+{
+    "liveServer.settings.port": 5501, // Port for live server
+    "appService.zipIgnorePattern": [
+        "__pycache__{,/**}",
+        "*.py[cod]",
+        "*$py.class",
+        ".Python{,/**}",
+        "build{,/**}",
+        "develop-eggs{,/**}",
+        "dist{,/**}",
+        "downloads{,/**}",
+        "eggs{,/**}",
+        ".eggs{,/**}",
+        "lib{,/**}",
+        "lib64{,/**}",
+        "parts{,/**}",
+        "sdist{,/**}",
+        "var{,/**}",
+        "wheels{,/**}",
+        "share/python-wheels{,/**}",
+        "*.egg-info{,/**}",
+        ".installed.cfg",
+        "*.egg",
+        "MANIFEST",
+        ".env{,/**}",
+        ".venv{,/**}",
+        "env{,/**}",
+        "venv{,/**}",
+        "ENV{,/**}",
+        "env.bak{,/**}",
+        "venv.bak{,/**}",
+        ".vscode{,/**}",
+        "uploads{,/**}", // Exclude uploads folder
+        "*.wav", // Exclude audio files
+        "*.mp3",
+        "*.log",
+        "*.tmp",
+        "*.bak",
+        "*.ipynb", // Exclude Jupyter notebooks
+        "models{,/**}/*.joblib", // Exclude large models
+        "models{,/**}/*.h5"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/fd8dff16-a30c-4875-bf8a-50b7c4850170/resourceGroups/SG-PROD-BDYAPPS-RG/providers/Microsoft.Web/sites/sg-prod-bdyapp-voice",
+    "appService.deploySubpath": ".", // Deploy root folder
+    "python.pythonPath": ".venv/bin/python", // Specify virtual environment path
+    "python.formatting.provider": "black", // Use Black formatter
+    "python.linting.enabled": true, // Enable linting
+    "python.linting.pylintEnabled": true, // Use Pylint
+    "python.linting.flake8Enabled": false, // Disable Flake8
+    "python.testing.unittestEnabled": true, // Enable unit testing
+    "editor.formatOnSave": true, // Format code on save
+    "files.exclude": {
+        "**/__pycache__/": true, // Hide __pycache__ folders
+        "**/*.pyc": true, // Hide compiled Python files
+        "**/.git": true, // Hide .git directory
+        "uploads/": true, // Hide uploads folder
+        "models/": true // Hide models folder
+    },
+    "terminal.integrated.env.linux": {
+        "FLASK_ENV": "development" // Set Flask environment variable
+    },
+    "terminal.integrated.env.windows": {
+        "FLASK_ENV": "development"
+    }
+}

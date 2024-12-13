@@ -117,8 +117,8 @@
 
     <h1>Voisaction</h1>
     <div class="container">
-        <div class="date">🕒 Aug 1, 2024</div>
-        <div class="event-name">Event Name</div>
+        <div class="date">🕒 {{ date }}</div>
+        <div class="event-name">{{ event_name }}</div>
         
         <div class="waveform" id="waveform">Recording Waveform</div>
         <div class="timer" id="timer">00:00:00</div>
@@ -131,14 +131,16 @@
     </div>
 
     <script>
+    
         let mediaRecorder;
         let audioChunks = [];
         let uploadInterval;
         let isUserStopping = false;
         let recordingTime = 0;
         let timerInterval;
+        let countdownInterval;
         
-        const UPLOAD_INTERVAL_MS = 0.5 * 10 * 1000; // 8 minutes in milliseconds
+        const UPLOAD_INTERVAL_MS = 1 * 10 * 1000; // 8 minutes in milliseconds
         const statusElement = document.getElementById("status");
         const startBtn = document.getElementById("startBtn");
         const stopBtn = document.getElementById("stopBtn");
@@ -160,6 +162,27 @@
             clearInterval(timerInterval);
             recordingTime = 0;
             timerElement.textContent = "00:00:00";
+        }
+
+        // Countdown function
+        function startCountdown(durationInSeconds) {
+            let remainingTime = durationInSeconds;
+            const countdownElement = document.createElement("div");
+            countdownElement.id = "countdown";
+            countdownElement.style.marginTop = "20px";
+            countdownElement.style.fontSize = "1.2em";
+            countdownElement.style.color = "#333";
+            countdownElement.textContent = `Redirecting in ${remainingTime} seconds...`;
+            document.body.appendChild(countdownElement);
+
+            countdownInterval = setInterval(() => {
+                remainingTime--;
+                countdownElement.textContent = `Redirecting in ${remainingTime} seconds...`;
+                if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = '/generate';
+                }
+            }, 1000);
         }
 
         // Start recording
@@ -194,6 +217,9 @@
             resetTimer();
 
             clearInterval(uploadInterval);
+
+            // Start the countdown after stopping the recording
+            startCountdown(0.1 * 60); // 10 minutes in seconds
         });
 
         // Function to start a new recording session
@@ -264,7 +290,10 @@
         function generateFilename() {
             const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
             return `audio_${timestamp}.wav`;
-        }
+        }        
+
+
+
     </script>
 
 </body>

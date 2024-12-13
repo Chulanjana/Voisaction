@@ -8,7 +8,7 @@ from urllib3.exceptions import InsecureRequestWarning
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from google.cloud import storage
 from google.api_core import retry
-from models.voiceRecognition import*
+from app import*
 
 
 
@@ -24,9 +24,6 @@ http = PoolManager(cert_reqs='CERT_NONE')
 
 url = "https://huggingface.co/google/flan-t5-base/resolve/main/tokenizer_config.json"
 response = http.request('GET', url)
-
-# Print the response data
-print(response.data)
 
 # Load model directly
 tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")

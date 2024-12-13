@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fef7f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 800px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #ff5733;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #ffdfd4;
+            color: #ff5733;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #ff5733;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e14e2b;
+        }
+        .add-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        input {
+            padding: 10px;
+            width: calc(33% - 10px);
+            margin-right: 10px;
+        }
+        .notification {
+            background-color: #e1f7d5;
+            color: #3c763d;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .icon {
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="meeting-name">{{ meeting_data.meeting_name }}</h1>
+        <h3 id="meeting-agenda">{{ meeting_data.meeting_agenda }}</h3>
+        <div class="notification" id="notification"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Action Point</th>
+                    <th>Responsible Person</th>
+                    <th>Due Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="action-point-list">
+                {% for point in meeting_data.action_points %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><input type="text" value="{{ point.action_point }}" onchange="editActionPoint('{{ loop.index0 }}', 'action_point', this.value)" /></td>
+                    <td><input type="text" value="{{ point.person }}" onchange="editActionPoint('{{ loop.index0 }}', 'person', this.value)" /></td>
+                    <td><input type="date" value="{{ point.due_date }}" onchange="editActionPoint('{{ loop.index0 }}', 'due_date', this.value)" /></td>
+                    <td>
+                        <span class="icon" onclick="removeActionPoint('{{ loop.index0 }}')">🗑</span>
+                    </td>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-container">
+            <input type="text" id="new-action-point" placeholder="Action point">
+            <input type="text" id="new-person" placeholder="Responsible person">
+            <input type="date" id="new-due-date">
+            <button onclick="addActionPoint()">Add</button>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="generateReport()">Generate Report</button>
+        </div>
+    </div>
+
+    <script>
+        let actionPoints = [];
+
+        // Load action points from backend-provided data
+        document.addEventListener('DOMContentLoaded', () => {
+            const meetingData = {
+                name: "{{ meeting_data.meeting_name }}",
+                agenda: "{{ meeting_data.meeting_agenda }}",
+                actionPoints: JSON.parse(`{{ meeting_data.action_points | tojson | safe }}`)
+            };
+
+            // Set meeting name and agenda from backend data
+            document.getElementById('meeting-name').innerText = meetingData.name;
+            document.getElementById('meeting-agenda').innerText = meetingData.agenda;
+
+            // Initialize action points
+            actionPoints = meetingData.actionPoints.map((point, index) => ({
+                ...point,
+                id: index // Assign an ID to each action point for easier management
+            }));
+
+            renderActionPoints();
+        });
+
+        // Function to render the action points
+        function renderActionPoints() {
+            const list = document.getElementById('action-point-list');
+            list.innerHTML = '';
+            actionPoints.forEach((point, index) => {
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <input type="text" value="${point.action_point}" 
+                                onchange="editActionPoint(${index}, 'action_point', this.value)" />
+                        </td>
+                        <td>
+                            <input type="text" value="${point.person}" 
+                                onchange="editActionPoint(${index}, 'person', this.value)" />
+                        </td>
+                        <td>
+                            <input type="date" value="${point.due_date}" 
+                                onchange="editActionPoint(${index}, 'due_date', this.value)" />
+                        </td>
+                        <td>
+                            <span class="icon" onclick="removeActionPoint(${index})">🗑</span>
+                        </td>
+                    </tr>
+                `;
+                list.innerHTML += row;
+            });
+        }
+
+        // Function to show notifications
+        function showNotification(message, type = "success") {
+            const notification = document.getElementById('notification');
+            notification.style.display = "block";
+            notification.style.backgroundColor = type === "error" ? "#f8d7da" : "#e1f7d5";
+            notification.style.color = type === "error" ? "#721c24" : "#3c763d";
+            notification.innerText = message;
+            setTimeout(() => {
+                notification.style.display = "none";
+            }, 3000);
+        }
+
+        // Function to edit an action point
+        function editActionPoint(index, field, value) {
+            actionPoints[index][field] = value;
+        }
+
+        // Function to remove an action point
+        function removeActionPoint(index) {
+            actionPoints.splice(index, 1);
+            renderActionPoints();
+            showNotification("Action Point Removed");
+        }
+
+        // Function to add a new action point
+        function addActionPoint() {
+            const newAction = document.getElementById('new-action-point').value.trim();
+            const newPerson = document.getElementById('new-person').value.trim();
+            const newDueDate = document.getElementById('new-due-date').value;
+
+            if (!newAction || !newPerson || !newDueDate) {
+                showNotification("All fields are required!", "error");
+                return;
+            }
+
+            actionPoints.push({ action_point: newAction, person: newPerson, due_date: newDueDate });
+            renderActionPoints();
+            showNotification("Action Point Added");
+
+            document.getElementById('new-action-point').value = '';
+            document.getElementById('new-person').value = '';
+            document.getElementById('new-due-date').value = '';
+        }
+
+        async function generateReport() {
+            try {
+                const payload = {   
+                    meeting_name: document.getElementById('meeting-name').innerText.trim(),
+                    meeting_agenda: document.getElementById('meeting-agenda').innerText.trim(),
+                    action_points: actionPoints
+                };
+
+                const response = await fetch('http://localhost:5000/generate_report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showNotification("Report generated successfully!");
+                    console.log('Updated meeting data:', result.data);
+                } else {
+                    showNotification("Failed to generate report", "error");
+                }
+            } catch (error) {
+                console.error('Error generating report:', error);
+                showNotification("An error occurred while generating the report", "error");
+            }
+        }
+
+
+
+    </script>
+</body>
+</html>
+
+
+
+
+
