@@ -374,7 +374,6 @@ transcription = [
     # Add other transcription rows here...
 ]
 
-
 @app.route('/report_pdf', methods=['POST'])
 def report_pdf():
     global date, event_name, number_of_participants, agenda_points, meeting_data,script,coverage,scors
@@ -416,7 +415,6 @@ def report_pdf():
     return jsonify({"message": "Report generated successfully"}), 200
 
 
-
 paragraph = ' '.join([desc[1] for desc in script if isinstance(desc[1], str)])
 summary=summarize_text_sumy(paragraph)
 
@@ -444,20 +442,6 @@ def similarity_checking(data):
         else:
             score_totals[key] = value
     scors = [[key, score] for key, score in score_totals.items()]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -37,8 +37,7 @@
         "*.tmp",
         "*.bak",
         "*.ipynb", // Exclude Jupyter notebooks
-        "models{,/**}/*.joblib", // Exclude large models
-        "models{,/**}/*.h5"
+
     ],
     "appService.defaultWebAppToDeploy": "/subscriptions/fd8dff16-a30c-4875-bf8a-50b7c4850170/resourceGroups/SG-PROD-BDYAPPS-RG/providers/Microsoft.Web/sites/sg-prod-bdyapp-voice",
     "appService.deploySubpath": ".", // Deploy root folder
